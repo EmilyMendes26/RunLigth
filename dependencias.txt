@@ -5,4 +5,3 @@ numpy==2.5.4
 pillow==13.0.0
 pyglet==2.1.19
 pyglm==2.8.3
-PyOpenGL @ file:///home/emily_andrade/%C3%81rea%20de%20trabalho/RunLight/pyopengl-3.1.10-py3-none-any.whl#sha256=794a943daced39300879e4e47bd94525280685f42dbb5a998d336cfff151d74f
