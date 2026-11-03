@@ -1,47 +1,91 @@
-import moderngl_window as mglw
-import numpy as np
+import sys
+# import numpy as np
+import glfw as gl
+import moderngl
 
-class Test(mglw.WindowConfig):
-    gl_version = (3, 3)
-    window_size = (1920, 1080)
+from controles.contoles_eventos import Controles
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
-        # 1. Defina os shaders como strings de texto (GLSL)
+class Game:
+    def __init__(self, largura=1280, altura=720):
+        gl.init()
+
+        # Pede um contexto OpenGL 3.3 core ao GLFW
+        gl.window_hint(gl.CONTEXT_VERSION_MAJOR, 3)
+        gl.window_hint(gl.CONTEXT_VERSION_MINOR, 3)
+        gl.window_hint(gl.OPENGL_PROFILE, gl.OPENGL_CORE_PROFILE)
+        gl.window_hint(gl.OPENGL_FORWARD_COMPAT, True)
+        gl.window_hint(gl.DEPTH_BITS, 24)
+
+        # Começa em tela cheia (passa o monitor)
+        monitor = gl.get_primary_monitor()
+        self.janela = gl.create_window(largura, altura, "RunLight", monitor, None)
+        gl.make_context_current(self.janela)
+
+        # Contexto ModernGL (usa o contexto OpenGL que o GLFW criou)
+        self.ctx = moderngl.create_context()
+        self.ctx.enable(moderngl.DEPTH_TEST)  # necessário para 3D
+
+        # Controles precisa da janela, por isso é criado aqui dentro
+        self.controles = Controles(self.janela)
+
+        self.ultimo_tempo = gl.get_time()
+        self.delta_time = 0.0
+
+        self.iniciar_cena()
+
+    def iniciar_cena(self):
+        # Shader program
         self.prog = self.ctx.program(
             vertex_shader="""
-                #version 330
-                in vec2 in_vert;
-                void main() {
-                    gl_Position = vec4(in_vert, 0.0, 1.0);
-                }
+            #version 330
+            in vec3 in_pos;
+            in vec3 in_color;
+            out vec3 v_color;
+            void main() {
+                v_color = in_color;
+                gl_Position = vec4(in_pos, 1.0);
+            }
             """,
             fragment_shader="""
-                #version 330
-                out vec4 fragColor;
-                void main() {
-                    fragColor = vec4(1.0, 0.0, 0.0, 1.0); // Cor vermelha
-                }
+            #version 330
+            in vec3 v_color;
+            out vec4 f_color;
+            void main() {
+                f_color = vec4(v_color, 1.0);
+            }
             """,
         )
 
-        # 2. Dados dos vértices (um triângulo simples)
-        vertices = np.array([-0.5, -0.5, 0.5, -0.5, 0.0, 0.5], dtype="f4")
+    def tratar_eventos(self):
+        # Dispara os callbacks do GLFW (teclado)
+        gl.poll_events()
 
-        # 3. Criação do VBO e do VAO associado ao shader
-        self.vbo = self.ctx.buffer(vertices)
-        self.vao = self.ctx.vertex_array(
-            self.prog, [(self.vbo, "2f", "in_vert")]
-        )
+        if self.controles.sair_jogo or gl.window_should_close(self.janela):
+            self.sair()
 
-        # 4. Textura
-        self.texture = self.ctx.texture(self.wnd.size, 4)
+    def atualizar(self):
+        # Aqui vai a lógica do jogo (movimento, câmera, etc.)
+        pass
 
-    def on_render(self, time: float, frametime: float):
-        self.ctx.clear(0.1, 0.1, 0.1, 1.0)  # Limpa a tela com fundo cinza escuro
-        self.vao.render()
+    def renderizar(self):
+        self.ctx.clear(0.08, 0.08, 0.1)
+        gl.swap_buffers(self.janela)
+
+    def sair(self):
+        gl.terminate()
+        sys.exit()
+
+    def rodar(self):
+        while True:
+            agora = gl.get_time()
+            self.delta_time = agora - self.ultimo_tempo  # segundos
+            self.ultimo_tempo = agora
+
+            self.tratar_eventos()
+            self.atualizar()
+            self.renderizar()
 
 
 if __name__ == "__main__":
-    Test.run()
+    Game().rodar()
