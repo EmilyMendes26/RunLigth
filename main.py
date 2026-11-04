@@ -69,7 +69,10 @@ class Game:
         pass
 
     def renderizar(self):
-        self.ctx.clear(0.08, 0.08, 0.1)
+        if self.controles.luz_acesa:
+            self.ctx.clear(1.0, 1.0, 1.0)
+        else:
+            self.ctx.clear(0.08, 0.08, 0.1)
         gl.swap_buffers(self.janela)
 
     def sair(self):

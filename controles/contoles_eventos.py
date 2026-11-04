@@ -6,6 +6,7 @@ class Controles:
         self.janela = janela
         self.sair_jogo = False
         self.tela_cheia = True
+        self.luz_acesa = False
 
         # Posição e tamanho usados ao voltar para o modo janela
         self.pos_janela = (100, 100)
@@ -13,6 +14,12 @@ class Controles:
 
         # Registra a função apertar para ser chamada pelo GLFW a cada tecla
         gl.set_key_callback(janela, self.apertar)
+
+    def troca_luz(self):
+        if self.luz_acesa:
+            self.luz_acesa = False
+        else:
+            self.luz_acesa = True
 
     def troca_fullscreen(self):
         if self.tela_cheia:
@@ -40,4 +47,5 @@ class Controles:
         elif tecla == gl.KEY_F11:
             self.troca_fullscreen()
         elif tecla == gl.KEY_I:
+            self.troca_luz()
             print("troca de luz")
