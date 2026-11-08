@@ -48,4 +48,3 @@ class Controles:
             self.troca_fullscreen()
         elif tecla == gl.KEY_I:
             self.troca_luz()
-            print("troca de luz")
