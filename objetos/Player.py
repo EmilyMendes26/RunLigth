@@ -1,92 +1,65 @@
+
 import numpy as np
 import moderngl
 
 
 class Player:
 
-  def __init__(self, ctx):
-    self.ctx = ctx
+    def __init__(self, ctx):
+        self.ctx = ctx
 
-    vertices = np.array(
-        [
-            -0.2,
-            -0.2,
-            -0.2,
-            0.2,
-            -0.2,
-            -0.2,
-            0.2,
-            0.2,
-            -0.2,
-            -0.2,
-            0.2,
-            -0.2,
-            -0.2,
-            -0.2,
-            0.2,
-            0.2,
-            -0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            -0.2,
-            0.2,
-            0.2,
-        ],
-        dtype="f4",
-    )
+        vertices = np.array(
+            [
+                -0.2, -0.2, -0.2,
+                 0.2, -0.2, -0.2,
+                 0.2,  0.2, -0.2,
+                -0.2,  0.2, -0.2,
 
-    indices = np.array(
-        [
-            0,
-            1,
-            1,
-            2,
-            2,
-            3,
-            3,
-            0,
-            4,
-            5,
-            5,
-            6,
-            6,
-            7,
-            7,
-            4,
-            0,
-            4,
-            1,
-            5,
-            2,
-            6,
-            3,
-            7,
-        ],
-        dtype="i4",
-    )
+                -0.2, -0.2,  0.2,
+                 0.2, -0.2,  0.2,
+                 0.2,  0.2,  0.2,
+                -0.2,  0.2,  0.2,
+            ],
+            dtype="f4",
+        )
 
-    self.vbo = self.ctx.buffer(vertices.tobytes())
-    self.ibo = self.ctx.buffer(indices.tobytes())
+        indices = np.array(
+            [
+                0, 1, 1, 2, 2, 3, 3, 0,
+                4, 5, 5, 6, 6, 7, 7, 4,
+                0, 4, 1, 5, 2, 6, 3, 7,
+            ],
+            dtype="i4",
+        )
 
-    vert_shader = """
+        self.vbo = self.ctx.buffer(vertices.tobytes())
+        self.ibo = self.ctx.buffer(indices.tobytes())
+
+        vert_shader = """
             #version 330
+
             in vec3 in_pos;
 
+            uniform vec2 u_pos;
+            uniform float u_aspect;
+
             void main() {
-                // Ajustamos levemente o X dividindo pela proporção da tela (16/9 aprox 1.77)
-                // para o cubo não ficar achatado ou gigante nas bordas.
                 vec3 pos = in_pos;
-                pos.x = pos.x / (1280.0 / 720.0);
+
+                pos.x += u_pos.x;
+                pos.y += u_pos.y;
+
+                pos.x /= u_aspect;
 
                 gl_Position = vec4(pos, 1.0);
             }
         """
 
-    frag_shader = """
+        frag_shader = """
             #version 330
+
             uniform vec3 u_color;
+
             out vec4 f_color;
 
             void main() {
@@ -94,23 +67,42 @@ class Player:
             }
         """
 
-    self.prog = self.ctx.program(
-        vertex_shader=vert_shader, fragment_shader=frag_shader
-    )
+        self.prog = self.ctx.program(
+            vertex_shader=vert_shader,
+            fragment_shader=frag_shader
+        )
 
-    self.vao = self.ctx.vertex_array(
-        self.prog, [(self.vbo, "3f", "in_pos")], self.ibo
-    )
+        self.vao = self.ctx.vertex_array(
+            self.prog,
+            [(self.vbo, "3f", "in_pos")],
+            self.ibo
+        )
 
-  def instanciar(self, luz_acesa):
-    if luz_acesa:
-      self.prog["u_color"].value = (0, 0, 0)
-    else:
-      self.prog["u_color"].value = (1.0, 1.0, 1.0)
-    self.vao.render(moderngl.LINES)
+    def instanciar(
+        self,
+        luz_acesa,
+        pos_x=0.0,
+        pos_y=0.0,
+        largura=1280,
+        altura=720
+    ):
 
-  def destruir(self):
-    self.vao.release()
-    self.vbo.release()
-    self.ibo.release()
-    self.prog.release()
+        if luz_acesa:
+            self.prog["u_color"].value = (0.0, 0.0, 0.0)
+        else:
+            self.prog["u_color"].value = (1.0, 1.0, 1.0)
+
+        self.prog["u_pos"].value = (pos_x, pos_y)
+
+        altura = max(altura, 1)
+        aspect = largura / altura
+
+        self.prog["u_aspect"].value = aspect
+
+        self.vao.render(moderngl.LINES)
+
+    def destruir(self):
+        self.vao.release()
+        self.vbo.release()
+        self.ibo.release()
+        self.prog.release()
