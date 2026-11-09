@@ -1,6 +1,6 @@
-
 import numpy as np
 import moderngl
+import math
 
 
 class Player:
@@ -10,15 +10,15 @@ class Player:
 
         vertices = np.array(
             [
-                -0.2, -0.2, -0.2,
-                 0.2, -0.2, -0.2,
-                 0.2,  0.2, -0.2,
-                -0.2,  0.2, -0.2,
+                -0.15, -0.15, -0.15,
+                 0.15, -0.15, -0.15,
+                 0.15,  0.15, -0.15,
+                -0.15,  0.15, -0.15,
 
-                -0.2, -0.2,  0.2,
-                 0.2, -0.2,  0.2,
-                 0.2,  0.2,  0.2,
-                -0.2,  0.2,  0.2,
+                -0.15, -0.15,  0.15,
+                 0.15, -0.15,  0.15,
+                 0.15,  0.15,  0.15,
+                -0.15,  0.15,  0.15,
             ],
             dtype="f4",
         )
@@ -42,16 +42,17 @@ class Player:
 
             uniform vec2 u_pos;
             uniform float u_aspect;
+            uniform mat4 u_rot;
 
             void main() {
-                vec3 pos = in_pos;
+                vec4 pos = u_rot * vec4(in_pos, 1.0);
 
                 pos.x += u_pos.x;
                 pos.y += u_pos.y;
 
                 pos.x /= u_aspect;
 
-                gl_Position = vec4(pos, 1.0);
+                gl_Position = vec4(pos.xyz, 1.0);
             }
         """
 
@@ -77,6 +78,18 @@ class Player:
             [(self.vbo, "3f", "in_pos")],
             self.ibo
         )
+
+        angulo = math.radians(45)
+        fator_z = 0.5
+
+        matriz_obliqua = np.array([
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [fator_z * math.cos(angulo), fator_z * math.sin(angulo), 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0]
+        ], dtype="f4")
+
+        self.prog["u_rot"].write(matriz_obliqua.tobytes())
 
     def instanciar(
         self,

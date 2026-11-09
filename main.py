@@ -5,6 +5,7 @@ import moderngl
 
 from controles.contoles_eventos import Controles
 from objetos.Player import Player
+from objetos.Plataforma import Plataforma
 
 
 class Game:
@@ -34,6 +35,8 @@ class Game:
 
         self.controles = Controles(self.window)
         self.player = Player(self.ctx)
+        self.plataforma = Plataforma(self.ctx)
+        self.plataforma = Plataforma(self.ctx, largura_pista=1.0)
 
         self.ultimo_tempo = gl.get_time()
         self.delta_time = 0.0
@@ -46,13 +49,11 @@ class Game:
 
     def renderizar(self):
 
-        # Obtém o tamanho REAL da área de renderização
         largura, altura = gl.get_framebuffer_size(self.window)
 
         if altura == 0 or largura == 0:
             return
 
-        # Atualiza o viewport conforme a resolução atual
         self.ctx.viewport = (0, 0, largura, altura)
 
         if self.controles.luz_acesa:
@@ -60,8 +61,16 @@ class Game:
         else:
             self.ctx.clear(0.08, 0.08, 0.1)
 
+        self.plataforma.instanciar(
+            self.controles.luz_acesa,
+            pos_y=-0.4,
+            largura=largura,
+            altura=altura
+        )
+
         self.player.instanciar(
             self.controles.luz_acesa,
+            pos_y=-0.4,
             largura=largura,
             altura=altura
         )
@@ -70,6 +79,7 @@ class Game:
 
     def sair(self):
         self.player.destruir()
+        self.plataforma.destruir()
         self.ctx.release()
         gl.destroy_window(self.window)
         gl.terminate()

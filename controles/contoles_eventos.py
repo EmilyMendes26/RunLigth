@@ -8,11 +8,9 @@ class Controles:
         self.tela_cheia = True
         self.luz_acesa = False
 
-        # Posição e tamanho usados ao voltar para o modo janela
         self.pos_janela = (100, 100)
         self.tamanho_janela = (1280, 720)
 
-        # Registra a função apertar para ser chamada pelo GLFW a cada tecla
         gl.set_key_callback(janela, self.apertar)
 
     def troca_luz(self):
