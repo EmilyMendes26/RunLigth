@@ -6,6 +6,7 @@ import moderngl
 from controles.contoles_eventos import Controles
 from objetos.Player import Player
 from objetos.Plataforma import Plataforma
+from objetos.Fps import ContadorFPS
 
 
 class Game:
@@ -37,9 +38,13 @@ class Game:
         self.player = Player(self.ctx)
         self.plataforma = Plataforma(self.ctx)
         self.plataforma = Plataforma(self.ctx, largura_pista=1.0)
+        self.fps_hud = ContadorFPS(self.ctx)
+        self.fps_atual = 0
 
         self.ultimo_tempo = gl.get_time()
         self.delta_time = 0.0
+        self.contador_frames = 0
+        self.acumulador_fps = 0.0
 
     def tratar_eventos(self):
         gl.poll_events()
@@ -48,7 +53,6 @@ class Game:
             self.sair()
 
     def renderizar(self):
-
         largura, altura = gl.get_framebuffer_size(self.window)
 
         if altura == 0 or largura == 0:
@@ -75,11 +79,20 @@ class Game:
             altura=altura
         )
 
+        self.fps_hud.instanciar(
+            self.controles.luz_acesa,
+            pos_x=-0.95,
+            pos_y=0.93,
+            largura=largura,
+            altura=altura,
+        )
+
         gl.swap_buffers(self.window)
 
     def sair(self):
         self.player.destruir()
         self.plataforma.destruir()
+        self.fps_hud.destruir()
         self.ctx.release()
         gl.destroy_window(self.window)
         gl.terminate()
@@ -92,10 +105,28 @@ class Game:
             self.delta_time = agora - self.ultimo_tempo
             self.ultimo_tempo = agora
 
+            self.atualizar_fps()
             self.tratar_eventos()
             self.renderizar()
 
         self.sair()
+
+    def atualizar_tela(self):
+        self.cronometro_tela += self.delta_time
+        if self.cronometro_tela >= self.tempo_troca_tela:
+            self.luz_tela = not self.luz_tela
+            self.cronometro_tela = 0.0
+            self.tempo_troca_tela = random.uniform(1.0, 4.0)
+
+    def atualizar_fps(self):
+        self.contador_frames += 1
+        self.acumulador_fps += self.delta_time
+
+        if self.acumulador_fps >= 1.0:
+                self.fps_atual = round(self.contador_frames / self.acumulador_fps)
+                self.fps_hud.atualizar(self.fps_atual)
+                self.contador_frames = 0
+                self.acumulador_fps = 0.0
 
 
 if __name__ == "__main__":
