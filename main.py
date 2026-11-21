@@ -8,6 +8,7 @@ from objetos.Player import Player
 from objetos.Plataforma import Plataforma
 from objetos.Fps import ContadorFPS
 from objetos.Pontuacao import Pontuacao
+from objetos.Arvore import CampoArvores
 
 
 class Game:
@@ -41,6 +42,7 @@ class Game:
         self.plataforma = Plataforma(self.ctx, largura_pista=1.0)
         self.fps_hud = ContadorFPS(self.ctx)
         self.pontuacao = Pontuacao(self.ctx)
+        self.arvores = CampoArvores(self.ctx, quantidade=16)
 
         self.fps_atual = 0
         self.ultimo_tempo = gl.get_time()
@@ -96,6 +98,12 @@ class Game:
             largura=largura,
             altura=altura,
         )
+        self.arvores.instanciar(
+            self.controles.luz_acesa,
+            pos_y=-0.4,
+            largura=largura,
+            altura=altura,
+        )
 
         gl.swap_buffers(self.window)
 
@@ -105,6 +113,7 @@ class Game:
         self.pontuacao.destruir()
         self.fps_hud.destruir()
         self.ctx.release()
+        self.arvores.destruir()
         gl.destroy_window(self.window)
         gl.terminate()
         sys.exit()
@@ -120,6 +129,7 @@ class Game:
             self.tratar_eventos()
             self.renderizar()
             self.pontuacao.atualizar(self.delta_time)
+            self.arvores.atualizar(self.delta_time, velocidade=6.0)
 
         self.sair()
 
