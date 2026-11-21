@@ -7,6 +7,7 @@ from controles.contoles_eventos import Controles
 from objetos.Player import Player
 from objetos.Plataforma import Plataforma
 from objetos.Fps import ContadorFPS
+from objetos.Pontuacao import Pontuacao
 
 
 class Game:
@@ -39,8 +40,9 @@ class Game:
         self.plataforma = Plataforma(self.ctx)
         self.plataforma = Plataforma(self.ctx, largura_pista=1.0)
         self.fps_hud = ContadorFPS(self.ctx)
-        self.fps_atual = 0
+        self.pontuacao = Pontuacao(self.ctx)
 
+        self.fps_atual = 0
         self.ultimo_tempo = gl.get_time()
         self.delta_time = 0.0
         self.contador_frames = 0
@@ -87,11 +89,20 @@ class Game:
             altura=altura,
         )
 
+        self.pontuacao.instanciar(
+            self.controles.luz_acesa,
+            pos_x=-0.95,
+            pos_y=0.80,
+            largura=largura,
+            altura=altura,
+        )
+
         gl.swap_buffers(self.window)
 
     def sair(self):
         self.player.destruir()
         self.plataforma.destruir()
+        self.pontuacao.destruir()
         self.fps_hud.destruir()
         self.ctx.release()
         gl.destroy_window(self.window)
@@ -108,6 +119,7 @@ class Game:
             self.atualizar_fps()
             self.tratar_eventos()
             self.renderizar()
+            self.pontuacao.atualizar(self.delta_time)
 
         self.sair()
 
