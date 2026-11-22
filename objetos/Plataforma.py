@@ -53,29 +53,37 @@ class Plataforma:
             }
         """
 
-        self.prog = self.ctx.program(vertex_shader=vert_shader, fragment_shader=frag_shader)
-        self.vao_faces = self.ctx.vertex_array(self.prog, [(self.vbo, "3f", "in_pos")], self.ibo_faces)
-        self.vao_linhas = self.ctx.vertex_array(self.prog, [(self.vbo, "3f", "in_pos")], self.ibo_linhas)
+        self.prog = self.ctx.program(
+            vertex_shader=vert_shader, fragment_shader=frag_shader
+        )
+        self.vao_faces = self.ctx.vertex_array(
+            self.prog, [(self.vbo, "3f", "in_pos")], self.ibo_faces
+        )
+        self.vao_linhas = self.ctx.vertex_array(
+            self.prog, [(self.vbo, "3f", "in_pos")], self.ibo_linhas
+        )
 
-    def instanciar(self, luz_acesa, pos_x=0.0, pos_y=-0.4, largura=1280, altura=720):
+    def instanciar(
+        self,
+        luz_acesa,
+        pos_x=0.0,
+        pos_y=-0.4,
+        largura=1280,
+        altura=720,
+        cor_sombra=(0.45, 0.45, 0.48),
+    ):
         self.prog["u_pos"].value = (pos_x, pos_y)
         self.prog["u_aspect"].value = largura / max(altura, 1)
 
-        # 1. Superfície sólida acompanhando o estado do cenário
         if luz_acesa:
             self.prog["u_color"].value = (1.0, 1.0, 1.0)
         else:
-            self.prog["u_color"].value = (0.08, 0.08, 0.1)
+            self.prog["u_color"].value = cor_sombra
 
-        self.prog["u_z_bias"].value = 0.01
+        self.prog["u_z_bias"].value = 0.005
         self.vao_faces.render(moderngl.TRIANGLES)
 
-        # 2. Linhas de contorno acompanhando o estado do cenário
-        if luz_acesa:
-            self.prog["u_color"].value = (0.0, 0.0, 0.0)
-        else:
-            self.prog["u_color"].value = (1.0, 1.0, 1.0)
-
+        self.prog["u_color"].value = (0.0, 0.0, 0.0)
         self.prog["u_z_bias"].value = 0.0
         self.ctx.line_width = 3.0
         self.vao_linhas.render(moderngl.LINES)
