@@ -6,18 +6,25 @@ class Controles:
         self.janela = janela
         self.sair_jogo = False
         self.tela_cheia = True
-        self.luz_acesa = False
+        self.luz_acesa_cenario = False
+        self.luz_acesa_player = False
 
         self.pos_janela = (100, 100)
         self.tamanho_janela = (1280, 720)
 
         gl.set_key_callback(janela, self.apertar)
 
-    def troca_luz(self):
-        if self.luz_acesa:
-            self.luz_acesa = False
+    def troca_luz_cenario(self):
+        if self.luz_acesa_cenario:
+            self.luz_acesa_cenario = False
         else:
-            self.luz_acesa = True
+            self.luz_acesa_cenario = True
+
+    def troca_luz_player(self):
+        if self.luz_acesa_player:
+            self.luz_acesa_player = False
+        else:
+            self.luz_acesa_player = True
 
     def troca_fullscreen(self):
         if self.tela_cheia:
@@ -45,4 +52,4 @@ class Controles:
         elif tecla == gl.KEY_F11:
             self.troca_fullscreen()
         elif tecla == gl.KEY_I:
-            self.troca_luz()
+            self.troca_luz_player()

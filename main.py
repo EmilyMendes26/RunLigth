@@ -1,4 +1,4 @@
-
+import random
 import sys
 import glfw as gl
 import moderngl
@@ -22,6 +22,7 @@ class Game:
         gl.window_hint(gl.OPENGL_PROFILE, gl.OPENGL_CORE_PROFILE)
         gl.window_hint(gl.OPENGL_FORWARD_COMPAT, True)
         gl.window_hint(gl.DEPTH_BITS, 24)
+        gl.window_hint(gl.STENCIL_BITS, 8)
 
         self.window = gl.create_window(
             largura, altura, "RunLight", None, None
@@ -44,6 +45,9 @@ class Game:
         self.pontuacao = Pontuacao(self.ctx)
         self.arvores = CampoArvores(self.ctx, quantidade=16)
 
+        self.cronometro_tela = 0.0
+        self.tempo_troca_tela = random.uniform(1.5, 4.5)
+
         self.fps_atual = 0
         self.ultimo_tempo = gl.get_time()
         self.delta_time = 0.0
@@ -64,27 +68,33 @@ class Game:
 
         self.ctx.viewport = (0, 0, largura, altura)
 
-        if self.controles.luz_acesa:
+        if self.controles.luz_acesa_player:
             self.ctx.clear(1.0, 1.0, 1.0)
         else:
             self.ctx.clear(0.08, 0.08, 0.1)
 
+        if self.controles.luz_acesa_cenario:
+            self.ctx.clear(1.0, 1.0, 1.0)
+        else:
+            self.ctx.clear(0.08, 0.08, 0.1)
+
+
         self.plataforma.instanciar(
-            self.controles.luz_acesa,
+            self.controles.luz_acesa_cenario,
             pos_y=-0.4,
             largura=largura,
             altura=altura
         )
 
         self.player.instanciar(
-            self.controles.luz_acesa,
+            self.controles.luz_acesa_player,
             pos_y=-0.4,
             largura=largura,
             altura=altura
         )
 
         self.fps_hud.instanciar(
-            self.controles.luz_acesa,
+            self.controles.luz_acesa_cenario,
             pos_x=-0.95,
             pos_y=0.93,
             largura=largura,
@@ -92,14 +102,14 @@ class Game:
         )
 
         self.pontuacao.instanciar(
-            self.controles.luz_acesa,
+            self.controles.luz_acesa_cenario,
             pos_x=-0.95,
             pos_y=0.80,
             largura=largura,
             altura=altura,
         )
         self.arvores.instanciar(
-            self.controles.luz_acesa,
+            self.controles.luz_acesa_cenario,
             pos_y=-0.4,
             largura=largura,
             altura=altura,
@@ -128,6 +138,7 @@ class Game:
             self.atualizar_fps()
             self.tratar_eventos()
             self.renderizar()
+            self.atualizar_tela()
             self.pontuacao.atualizar(self.delta_time)
             self.arvores.atualizar(self.delta_time, velocidade=6.0)
 
@@ -136,7 +147,7 @@ class Game:
     def atualizar_tela(self):
         self.cronometro_tela += self.delta_time
         if self.cronometro_tela >= self.tempo_troca_tela:
-            self.luz_tela = not self.luz_tela
+            self.controles.luz_acesa_cenario = not self.controles.luz_acesa_cenario
             self.cronometro_tela = 0.0
             self.tempo_troca_tela = random.uniform(1.0, 4.0)
 
