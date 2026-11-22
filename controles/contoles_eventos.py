@@ -6,8 +6,8 @@ class Controles:
         self.janela = janela
         self.sair_jogo = False
         self.tela_cheia = True
-        self.luz_acesa_cenario = False
-        self.luz_acesa_player = False
+        self.luz_acesa_cenario = True
+        self.luz_acesa_player = True
 
         self.pos_janela = (100, 100)
         self.tamanho_janela = (1280, 720)
