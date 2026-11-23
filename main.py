@@ -37,7 +37,7 @@ class Game:
         self.pontuacao = Pontuacao(self.ctx)
         self.arvores = CampoArvores(self.ctx, quantidade=16)
 
-        self.pos_luz = (0.0, 1.5, -1.0)
+        self.pos_luz = (-0.7, 1.2, 0.8)
 
         self.cronometro_tela = 0.0
         self.tempo_troca_tela = random.uniform(1.5, 4.5)
@@ -76,18 +76,19 @@ class Game:
             altura=altura,
         )
 
+        self.ctx.disable(moderngl.DEPTH_TEST)
         self.ctx.enable(moderngl.BLEND)
         self.ctx.blend_func = moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA
         self.ctx.depth_mask = False
 
-        if self.controles.luz_acesa_cenario:
-            self.player.renderizar_volume(
-                self.pos_luz,
-                pos_x=0.0,
-                pos_y=-0.4,
-                largura=largura,
-                altura=altura,
-            )
+        self.player.renderizar_volume(
+            self.pos_luz,
+            pos_x=0.0,
+            pos_y=-0.4,
+            largura=largura,
+            altura=altura,
+            luz_cenario=self.controles.luz_acesa_cenario
+        )
 
         self.ctx.disable(moderngl.BLEND)
         self.ctx.depth_mask = True

@@ -87,38 +87,45 @@ class Player:
             uniform float u_floor_y;
 
             void main() {
-                vec4 p = u_rot * vec4(in_pos, 1.0);
-                p.x += u_pos.x;
-                p.y += u_pos.y;
-
-                vec3 dir = p.xyz - u_light_pos;
-                if (dir.y != 0.0) {
+                vec3 p = in_pos;
+                vec3 dir = p - u_light_pos;
+                if (abs(dir.y) > 0.0001) {
                     float t = (u_floor_y - u_light_pos.y) / dir.y;
-                    p.xyz = u_light_pos + t * dir;
+                    p = u_light_pos + t * dir;
                 }
 
-                p.x /= u_aspect;
-                gl_Position = vec4(p.xy, p.z - 0.01, 1.0);
+                vec4 proj = u_rot * vec4(p, 1.0);
+                proj.x += u_pos.x;
+                proj.y += u_pos.y;
+                proj.x /= u_aspect;
+
+                gl_Position = vec4(proj.xy, proj.z, 1.0);
             }
         """
 
         frag_sombra = """
             #version 330
+            uniform vec4 u_cor_sombra;
             out vec4 f_color;
             void main() {
-                f_color = vec4(0.08, 0.08, 0.1, 0.8);
+                f_color = u_cor_sombra;
             }
         """
 
         self.prog_sombra = self.ctx.program(vertex_shader=vert_sombra, fragment_shader=frag_sombra)
         self.vao_sombra = self.ctx.vertex_array(self.prog_sombra, [(self.vbo, "3f", "in_pos")], self.ibo_faces)
 
-    def renderizar_volume(self, pos_luz, pos_x, pos_y, largura, altura):
+    def renderizar_volume(self, pos_luz, pos_x, pos_y, largura, altura, luz_cenario):
         self.prog_sombra["u_pos"].value = (pos_x, pos_y)
         self.prog_sombra["u_aspect"].value = largura / max(altura, 1)
         self.prog_sombra["u_light_pos"].value = pos_luz
-        self.prog_sombra["u_floor_y"].value = pos_y - 0.16
+        self.prog_sombra["u_floor_y"].value = -0.15
         self.prog_sombra["u_rot"].write(self.prog["u_rot"].read())
+
+        if luz_cenario:
+            self.prog_sombra["u_cor_sombra"].value = (0.08, 0.08, 0.1, 0.75)
+        else:
+            self.prog_sombra["u_cor_sombra"].value = (1.0, 1.0, 1.0, 0.75)
 
         self.vao_sombra.render(moderngl.TRIANGLES)
 
